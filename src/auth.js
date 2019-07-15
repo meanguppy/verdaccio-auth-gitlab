@@ -164,7 +164,7 @@ class Auth {
       return true;
     });
 
-    groups = groups.concat(gitConfig.real_groups);
+    groups = groups.concat((gitConfig || {}).real_groups || []);
 
     let pkgScope = '';
     let pkgName = '';
@@ -190,16 +190,7 @@ class Auth {
 
       this.logger.info(`[allow_${action}]`, groups, actionRole);
 
-      function isOverrideRole (roles) {
-        let isOverride = false, tick = 1;
-        while (!isOverride || tick >= roles.length) {
-          let role = roles[tick-1];
-          isOverride = overrideRoles.includes(role);
-        }
-        return isOverride;
-      }
-
-      if (groups.includes(actionRole) || isOverrideRole(groups)) {
+      if (groups.includes(actionRole) || overrideRoles.includes(actionRole)) {
         this.logger.info(`[allow_${action}]`, `Allow user ${userName || 'anonymous'} ${action} ${fullName}`);
 
         return cb(null, true);
