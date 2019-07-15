@@ -169,6 +169,7 @@ class Auth {
     let pkgScope = '';
     let pkgName = '';
     let fullName = pkg.name || '';
+    let overrideRoles = ['$all', '$anonymous', '@all', '@anonymous'];
 
     // '@scope/name' -> ['@scope/name', '@scope/', 'scope', 'name']
     let match = fullName.match(/^(@([^@\/]+)\/)?([^@\/]+)$/);
@@ -189,7 +190,16 @@ class Auth {
 
       this.logger.info(`[allow_${action}]`, groups, actionRole);
 
-      if (groups.includes(actionRole)) {
+      function isOverrideRole (roles) {
+        let isOverride = false, tick = 1;
+        while (!isOverride || tick >= roles.length) {
+          let role = roles[tick-1];
+          isOverride = overrideRoles.includes(role);
+        }
+        return isOverride;
+      }
+
+      if (groups.includes(actionRole) || isOverrideRole(groups)) {
         this.logger.info(`[allow_${action}]`, `Allow user ${userName || 'anonymous'} ${action} ${fullName}`);
 
         return cb(null, true);
