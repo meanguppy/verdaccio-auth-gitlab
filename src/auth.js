@@ -154,6 +154,17 @@ class Auth {
     let userName = user.name || '';
     let groups = user.groups || [];
     let actionRoles = pkg[action] || [];
+    let gitConfig = {};
+
+    groups = groups.filter(g => {
+      if(typeof g === 'object') {
+        gitConfig = g;
+        return false;
+      }
+      return true;
+    });
+
+    groups = groups.concat(gitConfig.real_groups);
 
     let pkgScope = '';
     let pkgName = '';
@@ -176,12 +187,16 @@ class Auth {
         });
       }
 
+      this.logger.info(`[allow_${action}]`, groups, actionRole);
+
       if (groups.includes(actionRole)) {
         this.logger.info(`[allow_${action}]`, `Allow user ${userName || 'anonymous'} ${action} ${fullName}`);
 
         return cb(null, true);
       }
     }
+
+
 
     this.logger.info(`[allow_${action}]`, `Block user ${userName || 'anonymous'} ${action} ${fullName}`);
 
